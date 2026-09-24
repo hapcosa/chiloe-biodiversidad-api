@@ -6,6 +6,7 @@ import { ListadoEspecies } from './paginas/ListadoEspecies';
 import { FormularioEspecie } from './paginas/FormularioEspecie';
 import { Postulaciones } from './paginas/Postulaciones';
 import { Avistamientos } from './paginas/Avistamientos';
+import { Usuarios } from './paginas/Usuarios';
 
 function Privadas() {
   const { usuario } = useSesion();
@@ -19,6 +20,7 @@ function Privadas() {
         <Route path="/especies/:id" element={<FormularioEspecie />} />
         <Route path="/postulaciones" element={<Postulaciones />} />
         <Route path="/avistamientos" element={<Avistamientos />} />
+        <Route path="/usuarios" element={<Usuarios />} />
         <Route path="*" element={<Navigate to="/especies" replace />} />
       </Routes>
     </Layout>

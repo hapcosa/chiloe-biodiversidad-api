@@ -6,14 +6,25 @@ import type {
   EspecieEstado,
   Familia,
   Genero,
+  Insignia,
+  InsigniaOtorgada,
   JsonSchema,
+  PaginaDeUsuarios,
   Postulacion,
   PostulacionEstado,
   PresignedUpload,
   Reino,
   RespuestaLogin,
+  RolUsuario,
   Usuario,
 } from './tipos';
+
+export interface FiltrosUsuarios {
+  pagina?: number;
+  por_pagina?: number;
+  buscar?: string;
+  rol?: RolUsuario | '';
+}
 
 export interface FiltrosEspecies {
   categoria_id?: number;
@@ -91,6 +102,50 @@ export function crearApi(token: string | null, onNoAutorizado: () => void) {
       pedir<Avistamiento>(`/api/v1/avistamientos/${id}/moderacion`, {
         method: 'PATCH',
         body: estado === 'rechazado' ? { estado, motivo_rechazo: motivo } : { estado },
+      }),
+
+    // ----- usuarios y curaduría -----
+    usuariosDeCuraduria: (filtros: FiltrosUsuarios) =>
+      pedir<PaginaDeUsuarios>(`/api/v1/curaduria/usuarios${construirQuery({ ...filtros })}`),
+
+    asignarCategoria: (categoriaId: number, usuarioId: number) =>
+      pedir<{ success: boolean }>(
+        `/api/v1/categorias/${categoriaId}/moderadores/${usuarioId}`,
+        { method: 'POST' },
+      ),
+
+    quitarCategoria: (categoriaId: number, usuarioId: number) =>
+      pedir<{ success: boolean }>(
+        `/api/v1/categorias/${categoriaId}/moderadores/${usuarioId}`,
+        { method: 'DELETE' },
+      ),
+
+    // ----- insignias -----
+    insignias: () => pedir<RespuestaLista<Insignia>>('/api/v1/insignias').then((r) => r.data),
+
+    // Una sola llamada para la página entera: pedirlas fila por fila serían
+    // tantas peticiones como usuarios visibles.
+    insigniasDeVarios: (ids: number[]) =>
+      ids.length === 0
+        ? Promise.resolve<Record<string, InsigniaOtorgada[]>>({})
+        : pedir<{ success: boolean; data: Record<string, InsigniaOtorgada[]> }>(
+            `/api/v1/insignias/usuarios${construirQuery({ ids: ids.join(',') })}`,
+          ).then((r) => r.data),
+
+    otorgarInsignia: (usuarioId: number, codigo: string, motivo?: string) =>
+      pedir<{ success: boolean; otorgada: boolean }>('/api/v1/insignias/otorgar', {
+        method: 'POST',
+        body: motivo ? { usuario_id: usuarioId, codigo, motivo } : { usuario_id: usuarioId, codigo },
+      }),
+
+    revocarInsignia: (usuarioId: number, codigo: string) =>
+      pedir<{ success: boolean }>(`/api/v1/insignias/usuario/${usuarioId}/${codigo}`, {
+        method: 'DELETE',
+      }),
+
+    recalcularInsignias: () =>
+      pedir<{ success: boolean; otorgadas: number }>('/api/v1/insignias/recalcular', {
+        method: 'POST',
       }),
 
     // ----- fotos -----

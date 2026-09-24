@@ -15,6 +15,9 @@ export function Layout({ children }: { children: ReactNode }) {
           {/* La bandeja de postulaciones solo la resuelve un admin: mostrarla a
               un curador sería ofrecerle una pantalla que devuelve 403. */}
           {usuario?.role === 'admin' && <NavLink to="/postulaciones">Postulaciones</NavLink>}
+          {/* Igual que postulaciones: el listado de usuarios lo responde la API
+              solo a un admin. */}
+          {usuario?.role === 'admin' && <NavLink to="/usuarios">Usuarios</NavLink>}
         </nav>
         <span className="sesion">
           {usuario?.name} · {esGlobal ? usuario?.role : 'curador'}
