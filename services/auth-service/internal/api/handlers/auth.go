@@ -612,23 +612,87 @@ func (h *AuthHandler) generateState() string {
 	return hex.EncodeToString(bytes)
 }
 
-// Métodos de administración (simplificados)
+// Métodos de administración
+
+// ListUsers lista usuarios para la pantalla de usuarios del panel de
+// curaduría, con paginación, búsqueda por nombre o email y filtro por rol.
 func (h *AuthHandler) ListUsers(c *gin.Context) {
-	// TODO: Implementar listado de usuarios con paginación
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error":   "Not Implemented",
-		"message": "Feature not implemented yet",
-		"code":    501,
+	pagina, err := strconv.Atoi(c.DefaultQuery("pagina", "1"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": "El parámetro 'pagina' debe ser un número",
+			"code":    400,
+		})
+		return
+	}
+
+	porPagina, err := strconv.Atoi(c.DefaultQuery("por_pagina", "0"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": "El parámetro 'por_pagina' debe ser un número",
+			"code":    400,
+		})
+		return
+	}
+
+	resultado, err := h.authService.ListUsers(services.ListUsersFilter{
+		Pagina:    pagina,
+		PorPagina: porPagina,
+		Buscar:    c.Query("buscar"),
+		Rol:       c.Query("rol"),
 	})
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidRole) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Bad Request",
+				"message": "Rol desconocido",
+				"code":    400,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal Server Error",
+			"message": "No se pudo listar los usuarios",
+			"code":    500,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, resultado)
 }
 
 func (h *AuthHandler) GetUser(c *gin.Context) {
-	// TODO: Implementar obtención de usuario por ID
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error":   "Not Implemented",
-		"message": "Feature not implemented yet",
-		"code":    501,
-	})
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": "El id del usuario debe ser un número",
+			"code":    400,
+		})
+		return
+	}
+
+	usuario, err := h.authService.GetUser(uint(userID))
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":   "Not Found",
+				"message": "Usuario no encontrado",
+				"code":    404,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal Server Error",
+			"message": "No se pudo obtener el usuario",
+			"code":    500,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, usuario)
 }
 
 func (h *AuthHandler) UpdateUser(c *gin.Context) {
