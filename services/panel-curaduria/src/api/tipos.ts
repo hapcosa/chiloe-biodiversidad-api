@@ -6,11 +6,14 @@ export type Reino = (typeof REINOS)[number];
 
 export type EspecieEstado = 'borrador' | 'publicada';
 
+export const ROLES = ['admin', 'moderator', 'researcher', 'user'] as const;
+export type RolUsuario = (typeof ROLES)[number];
+
 export interface Usuario {
   id: number;
   email: string;
   name: string;
-  role: 'admin' | 'moderator' | 'researcher' | 'user';
+  role: RolUsuario;
 }
 
 export interface RespuestaLogin {
@@ -124,4 +127,69 @@ export interface JsonSchema {
   maxLength?: number;
   uniqueItems?: boolean;
   additionalProperties?: boolean;
+}
+
+// ----- usuarios de curaduría -----
+//
+// El listado lo arma especies-api cruzando los usuarios del auth-service con
+// las asignaciones de curaduría de su propia base (ADR #27). Los nombres de
+// campo son los del backend (`rol`, no `role`): es otra respuesta, no la del
+// login.
+
+export interface CategoriaCurada {
+  id: number;
+  slug: string;
+  nombre: string;
+  reino: Reino;
+  total_especies: number;
+  descripcion?: string | null;
+}
+
+export interface UsuarioDeCuraduria {
+  id: number;
+  // Cuando el auth-service no respondió estos campos llegan vacíos: la fila
+  // trae solo el id, que es lo único que especies-api sabe por sí misma.
+  email: string;
+  nombre: string;
+  avatar: string;
+  rol: RolUsuario | '';
+  estado: string;
+  profesion: string;
+  perfil_publico: boolean;
+  creado_en: string;
+  categorias_curadas: CategoriaCurada[];
+}
+
+export interface PaginaDeUsuarios {
+  success: boolean;
+  usuarios: UsuarioDeCuraduria[];
+  total: number;
+  pagina: number;
+  por_pagina: number;
+  // false = el auth-service no contestó y la página viene degradada: solo los
+  // ids que curan algo, sin nombre ni email. La pantalla lo avisa.
+  auth_disponible: boolean;
+}
+
+// ----- insignias -----
+
+export type TipoInsignia = 'automatica' | 'rol';
+
+export interface Insignia {
+  id: number;
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  criterio: string;
+  // Las `automatica` las otorga el recálculo por métrica y umbral; solo las
+  // `rol` se dan y se quitan a mano.
+  tipo: TipoInsignia;
+  metrica: string | null;
+  umbral: number | null;
+}
+
+export interface InsigniaOtorgada extends Insignia {
+  otorgada_en: string;
+  otorgada_por: number | null;
+  motivo: string | null;
 }
