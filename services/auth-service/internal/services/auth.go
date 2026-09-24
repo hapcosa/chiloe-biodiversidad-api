@@ -43,6 +43,7 @@ var (
 	ErrInvalidOAuthToken  = errors.New("invalid oauth token")
 	ErrUnverifiedEmail    = errors.New("email is not verified")
 	ErrUserNotActive      = errors.New("user account is not active")
+	ErrInvalidRole        = errors.New("invalid role")
 )
 
 func NewAuthService(db *gorm.DB, redis *redis.Client, config config.JWTConfig) *AuthService {
