@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <string>
+
 #include "../include/utils/query_params.hpp"
 
 // El bbox del mapa viajaba con las comas como %2C —encodeURIComponent lo hace
@@ -40,4 +42,30 @@ TEST(QueryParamsTest, DecodificaEspaciosYAcentosDeUnaBusqueda) {
 
 TEST(QueryParamsTest, ElValorVacioNoRompe) {
     EXPECT_EQ(utils::percentDecode(""), "");
+}
+
+// percentEncode se usa al armar la query de una llamada saliente (el listado de
+// usuarios del auth-service, Fase 9 PR 12), donde el nombre buscado lo escribe
+// un humano y puede traer cualquier cosa.
+
+TEST(QueryParamsTest, CodificaEspaciosYAcentos) {
+    EXPECT_EQ(utils::percentEncode("zorro chilote"), "zorro%20chilote");
+    EXPECT_EQ(utils::percentEncode("muñeco"), "mu%C3%B1eco");
+}
+
+TEST(QueryParamsTest, CodificaLoQueRomperiaLaQuery) {
+    // Un '&' o un '=' sin codificar partirían la query en otro parámetro.
+    EXPECT_EQ(utils::percentEncode("a&b=c"), "a%26b%3Dc");
+    EXPECT_EQ(utils::percentEncode("100%"), "100%25");
+}
+
+TEST(QueryParamsTest, DejaIntactosLosNoReservados) {
+    EXPECT_EQ(utils::percentEncode("Ana-Maria_1.0~x"), "Ana-Maria_1.0~x");
+}
+
+TEST(QueryParamsTest, CodificarYDecodificarDevuelveElOriginal) {
+    for (const std::string original : {"zorro chilote", "María & Juan", "100%",
+                                       "a+b", "", "ñandú/x?y=z"}) {
+        EXPECT_EQ(utils::percentDecode(utils::percentEncode(original)), original);
+    }
 }

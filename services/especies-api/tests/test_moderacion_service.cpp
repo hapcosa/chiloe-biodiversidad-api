@@ -2,9 +2,11 @@
 // regla que interesa es quién pasa, no cómo se consulta Postgres.
 #include <gtest/gtest.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "services/moderacion_service.hpp"
 
@@ -19,6 +21,15 @@ public:
     }
 
     std::vector<CategoriaModeracion> categoriasDe(int) override { return {}; }
+
+    // El cruce con los usuarios del auth-service se prueba en
+    // test_curaduria_usuarios.cpp; acá solo interesa la regla de permiso.
+    std::map<int, std::vector<CategoriaModeracion>> asignacionesDe(
+        const std::vector<int>&) override {
+        return {};
+    }
+
+    std::vector<int> usuariosConCuraduria() override { return {}; }
 
     bool asignar(int usuarioId, int categoriaId, int) override {
         return asignaciones.insert({usuarioId, categoriaId}).second;

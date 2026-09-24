@@ -76,6 +76,7 @@ set(REQUIRED_SOURCES
         src/controllers/portada_controller.cpp
         src/controllers/categoria_controller.cpp
         src/controllers/moderador_controller.cpp
+        src/controllers/curaduria_usuarios_controller.cpp
         src/controllers/identificacion_controller.cpp
         src/controllers/postulacion_controller.cpp
         src/controllers/insignia_controller.cpp
@@ -113,6 +114,8 @@ set(REQUIRED_SOURCES
         src/services/avistamiento_visibilidad.cpp
         src/services/categoria_service.cpp
         src/services/moderacion_service.cpp
+        src/services/auth_usuarios_client.cpp
+        src/services/curaduria_usuarios_service.cpp
         src/services/identificacion_service.cpp
         src/services/postulacion_service.cpp
         src/services/insignia_service.cpp
@@ -217,6 +220,7 @@ set(SOURCES
         src/controllers/portada_controller.cpp
         src/controllers/categoria_controller.cpp
         src/controllers/moderador_controller.cpp
+        src/controllers/curaduria_usuarios_controller.cpp
         src/controllers/identificacion_controller.cpp
         src/controllers/postulacion_controller.cpp
         src/controllers/insignia_controller.cpp
@@ -254,6 +258,8 @@ set(SOURCES
         src/services/avistamiento_visibilidad.cpp
         src/services/categoria_service.cpp
         src/services/moderacion_service.cpp
+        src/services/auth_usuarios_client.cpp
+        src/services/curaduria_usuarios_service.cpp
         src/services/identificacion_service.cpp
         src/services/postulacion_service.cpp
         src/services/insignia_service.cpp

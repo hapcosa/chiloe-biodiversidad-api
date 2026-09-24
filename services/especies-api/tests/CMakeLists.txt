@@ -26,8 +26,14 @@
 #     agregación en sí vive en SQL y no se cubre aquí.
 #   - avistamiento.cpp: qué expone toJson (el feed lee identificaciones_count)
 #     y qué ignora fromJson.
-#   - query_params.cpp: decodificación de los %XX de la query string, que
-#     Pistache no hace. El bbox del mapa llegaba con las comas como %2C.
+#   - query_params.cpp: (de)codificación de los %XX de la query string, que
+#     Pistache no hace. El bbox del mapa llegaba con las comas como %2C, y el
+#     camino inverso se usa al armar la query de una llamada saliente.
+#   - curaduria_usuarios_service.cpp + auth_usuarios_client.cpp: el cruce entre
+#     los usuarios del auth-service y las asignaciones de curaduría de esta base
+#     (Fase 9, PR 12), con dobles del cliente HTTP y del repositorio. Incluye la
+#     degradación a ids sin nombre cuando el auth-service no responde: el panel
+#     no puede quedar en blanco por eso. El transporte CURL no se cubre acá.
 #   - portada.cpp: el recorte del endpoint agregado de la portada (Fase 9.4,
 #     PR 14). Sobre todo que un encuentro proyectado no lleve coordenadas: el
 #     mapa difumina las especies amenazadas y esto no puede deshacerlo.
@@ -60,6 +66,7 @@ add_executable(unit_tests
         test_query_params.cpp
         test_portada.cpp
         test_insignia.cpp
+        test_curaduria_usuarios.cpp
         ${CMAKE_SOURCE_DIR}/src/models/reino.cpp
         ${CMAKE_SOURCE_DIR}/src/models/especie_estado.cpp
         ${CMAKE_SOURCE_DIR}/src/models/especie.cpp
@@ -80,6 +87,8 @@ add_executable(unit_tests
         ${CMAKE_SOURCE_DIR}/src/models/portada.cpp
         ${CMAKE_SOURCE_DIR}/src/models/insignia.cpp
         ${CMAKE_SOURCE_DIR}/src/services/insignia_service.cpp
+        ${CMAKE_SOURCE_DIR}/src/services/auth_usuarios_client.cpp
+        ${CMAKE_SOURCE_DIR}/src/services/curaduria_usuarios_service.cpp
 )
 
 target_include_directories(unit_tests PRIVATE ${CMAKE_SOURCE_DIR}/include)

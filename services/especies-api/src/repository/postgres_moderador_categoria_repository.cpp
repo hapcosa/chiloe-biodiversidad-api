@@ -1,6 +1,7 @@
 #include "../../include/repository/postgres_moderador_categoria_repository.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 
@@ -70,6 +71,65 @@ std::vector<CategoriaModeracion> PostgresModeradorCategoriaRepository::categoria
         return categorias;
     } catch (const std::exception& error) {
         std::cerr << "Error al listar categorías del curador: " << error.what() << std::endl;
+        throw;
+    }
+}
+
+std::map<int, std::vector<CategoriaModeracion>>
+PostgresModeradorCategoriaRepository::asignacionesDe(
+    const std::vector<int>& usuarioIds) {
+    std::map<int, std::vector<CategoriaModeracion>> porUsuario;
+    if (usuarioIds.empty()) return porUsuario;
+
+    try {
+        // Los ids son enteros ya parseados, así que el literal de array se
+        // arma sin riesgo de inyección; pqxx no tiene binding de arrays.
+        std::ostringstream literal;
+        literal << '{';
+        for (std::size_t i = 0; i < usuarioIds.size(); ++i) {
+            if (i > 0) literal << ',';
+            literal << usuarioIds[i];
+        }
+        literal << '}';
+
+        auto conn = database->createConnection();
+        pqxx::work txn(*conn);
+        const auto rows = txn.exec_params(
+            std::string("SELECT mc.usuario_id, ") + kCategoriaCols
+                + " FROM moderador_categorias mc"
+                  " JOIN categorias_moderacion c ON c.id = mc.categoria_id"
+                  " WHERE mc.usuario_id = ANY($1::int[])"
+                  " ORDER BY mc.usuario_id, c.reino, c.nombre",
+            literal.str());
+
+        for (const auto& row : rows) {
+            porUsuario[row["usuario_id"].as<int>()].push_back(
+                mapRowToCategoria(row));
+        }
+        return porUsuario;
+    } catch (const std::exception& error) {
+        std::cerr << "Error al listar asignaciones de curaduría: " << error.what()
+                  << std::endl;
+        throw;
+    }
+}
+
+std::vector<int> PostgresModeradorCategoriaRepository::usuariosConCuraduria() {
+    try {
+        auto conn = database->createConnection();
+        pqxx::work txn(*conn);
+        const auto rows = txn.exec(
+            "SELECT DISTINCT usuario_id FROM moderador_categorias"
+            " ORDER BY usuario_id");
+
+        std::vector<int> ids;
+        ids.reserve(rows.size());
+        for (const auto& row : rows) {
+            ids.push_back(row["usuario_id"].as<int>());
+        }
+        return ids;
+    } catch (const std::exception& error) {
+        std::cerr << "Error al listar curadores: " << error.what() << std::endl;
         throw;
     }
 }
