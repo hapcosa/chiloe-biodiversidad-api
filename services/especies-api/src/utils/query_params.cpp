@@ -1,6 +1,8 @@
 #include "../../include/utils/query_params.hpp"
 
 #include <cctype>
+#include <iomanip>
+#include <sstream>
 
 namespace utils {
 
@@ -22,6 +24,26 @@ std::string percentDecode(const std::string& valor) {
     }
 
     return salida;
+}
+
+std::string percentEncode(const std::string& valor) {
+    std::ostringstream salida;
+    salida << std::hex << std::uppercase << std::setfill('0');
+
+    for (const unsigned char caracter : valor) {
+        const bool noReservado = (caracter >= 'A' && caracter <= 'Z') ||
+                                 (caracter >= 'a' && caracter <= 'z') ||
+                                 (caracter >= '0' && caracter <= '9') ||
+                                 caracter == '-' || caracter == '_' ||
+                                 caracter == '.' || caracter == '~';
+        if (noReservado) {
+            salida << caracter;
+            continue;
+        }
+        salida << '%' << std::setw(2) << static_cast<int>(caracter);
+    }
+
+    return salida.str();
 }
 
 } // namespace utils

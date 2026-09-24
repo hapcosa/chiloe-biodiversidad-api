@@ -10,6 +10,7 @@
 #include "../include/controllers/avistamiento_controller.hpp"
 #include "../include/controllers/portada_controller.hpp"
 #include "../include/controllers/categoria_controller.hpp"
+#include "../include/controllers/curaduria_usuarios_controller.hpp"
 #include "../include/controllers/familia_controller.hpp"
 #include "../include/controllers/identificacion_controller.hpp"
 #include "../include/controllers/insignia_controller.hpp"
@@ -31,7 +32,9 @@
 #include "../include/services/area_protegida_service.hpp"
 #include "../include/services/avistamiento_service.hpp"
 #include "../include/services/portada_service.hpp"
+#include "../include/services/auth_usuarios_client.hpp"
 #include "../include/services/categoria_service.hpp"
+#include "../include/services/curaduria_usuarios_service.hpp"
 #include "../include/services/especie_service.hpp"
 #include "../include/services/familia_service.hpp"
 #include "../include/services/genero_service.hpp"
@@ -130,6 +133,9 @@ int main(int argc, char** argv) {
   auto portadaService =
       std::make_shared<PortadaService>(especieService, avistamientoService);
   auto insigniaService = std::make_shared<InsigniaService>(insigniaRepository);
+  auto authUsuariosClient = std::make_shared<AuthUsuariosClient>();
+  auto curaduriaUsuariosService = std::make_shared<CuraduriaUsuariosService>(
+      authUsuariosClient, moderadorCategoriaRepository);
 
   // Initialize controllers
   auto familiaController = std::make_shared<FamiliaController>(familiaService);
@@ -154,6 +160,8 @@ int main(int argc, char** argv) {
   auto portadaController = std::make_shared<PortadaController>(portadaService);
   auto insigniaController =
       std::make_shared<InsigniaController>(insigniaService);
+  auto curaduriaUsuariosController =
+      std::make_shared<CuraduriaUsuariosController>(curaduriaUsuariosService);
 
   // Setup router
   auto router = std::make_shared<Pistache::Rest::Router>();
@@ -181,6 +189,7 @@ int main(int argc, char** argv) {
   UploadController::setupRoutes(*router, uploadController);
   SchemaController::setupRoutes(*router, schemaController);
   InsigniaController::setupRoutes(*router, insigniaController);
+  CuraduriaUsuariosController::setupRoutes(*router, curaduriaUsuariosController);
 
   // Configure server - MEJORADO para red local
   Pistache::Http::Endpoint server(addr);

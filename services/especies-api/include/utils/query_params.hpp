@@ -22,6 +22,12 @@ namespace utils {
 // con encodeURIComponent, que codifica el espacio como %20.
 std::string percentDecode(const std::string& valor);
 
+// El camino inverso: deja intactos los caracteres no reservados de la RFC 3986
+// y codifica todo lo demás. Se usa al armar la query de una llamada saliente
+// (el listado de usuarios del auth-service): un nombre con espacio o con `&`
+// rompería la URL.
+std::string percentEncode(const std::string& valor);
+
 } // namespace utils
 
 #endif // UTILS_QUERY_PARAMS_HPP
