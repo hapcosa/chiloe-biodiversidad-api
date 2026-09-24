@@ -71,6 +71,11 @@ void CuraduriaUsuariosController::listar(const Pistache::Rest::Request& request,
         json cuerpo = pagina.toJson();
         cuerpo["success"] = true;
         sendJson(response, Pistache::Http::Code::Ok, cuerpo);
+    } catch (const AuthUsuariosRechazo& error) {
+        // El auth-service rechazó la consulta: el filtro venía mal o el JWT
+        // reenviado no le sirve. Se propaga su código en vez de inventar un 500.
+        sendJson(response, static_cast<Pistache::Http::Code>(error.codigo),
+                 {{"success", false}, {"error", error.what()}});
     } catch (const std::exception& error) {
         sendJson(response, Pistache::Http::Code::Internal_Server_Error,
                  {{"success", false}, {"error", error.what()}});

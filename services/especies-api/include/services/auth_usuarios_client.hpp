@@ -53,12 +53,24 @@ public:
         : std::runtime_error(motivo) {}
 };
 
+// El auth-service entendió la petición y la rechazó: el filtro venía mal, o el
+// JWT reenviado no le sirve. Es culpa del llamador, así que **no** se degrada:
+// degradar acá convertiría un `rol=superadmin` en una página silenciosamente
+// incompleta en vez de un 400.
+class AuthUsuariosRechazo : public std::runtime_error {
+public:
+    long codigo;
+
+    AuthUsuariosRechazo(long codigo, const std::string& motivo)
+        : std::runtime_error(motivo), codigo(codigo) {}
+};
+
 class IAuthUsuariosClient {
 public:
     virtual ~IAuthUsuariosClient() = default;
 
-    // Lanza AuthUsuariosNoDisponible si el auth-service no responde o
-    // responde un cuerpo ilegible.
+    // Lanza AuthUsuariosNoDisponible si el auth-service no responde o responde
+    // un cuerpo ilegible, y AuthUsuariosRechazo si responde un 4xx.
     virtual PaginaDeUsuarios listar(const FiltroDeUsuarios& filtro,
                                     const std::string& authorization) = 0;
 };

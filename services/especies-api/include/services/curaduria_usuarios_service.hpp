@@ -44,8 +44,9 @@ public:
         std::shared_ptr<IModeradorCategoriaRepository> moderadorRepository);
 
     // `authorization` es la cabecera de quien preguntó, que se reenvía tal cual
-    // al auth-service. Nunca lanza por culpa del auth-service: si no responde,
-    // devuelve la página degradada.
+    // al auth-service. Si el auth-service no responde, devuelve la página
+    // degradada en vez de lanzar. Un rechazo suyo (4xx) sí sale como
+    // AuthUsuariosRechazo: eso es culpa del llamador, no una caída.
     PaginaDeCuraduria listar(const FiltroDeUsuarios& filtro,
                              const std::string& authorization);
 };

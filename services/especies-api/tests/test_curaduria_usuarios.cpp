@@ -28,6 +28,7 @@ class FakeAuthClient : public IAuthUsuariosClient {
 public:
     PaginaDeUsuarios respuesta;
     bool falla = false;
+    bool rechaza = false;
     FiltroDeUsuarios filtroRecibido;
     std::string authorizationRecibido;
     int llamadas = 0;
@@ -37,6 +38,7 @@ public:
         ++llamadas;
         filtroRecibido = filtro;
         authorizationRecibido = authorization;
+        if (rechaza) throw AuthUsuariosRechazo(400, "rol inválido");
         if (falla) throw AuthUsuariosNoDisponible("caído");
         return respuesta;
     }
@@ -137,10 +139,22 @@ TEST(ParsearPaginaDeUsuarios, LeeLaPaginaCompleta) {
     EXPECT_EQ(pagina.usuarios[0].nombre, "Ana");
     EXPECT_EQ(pagina.usuarios[0].email, "a@b.cl");
     EXPECT_EQ(pagina.usuarios[0].rol, "admin");
+    EXPECT_EQ(pagina.usuarios[0].creadoEn, "2026-01-02T03:04:05.000Z");
     EXPECT_TRUE(pagina.usuarios[0].perfilPublico);
     EXPECT_EQ(pagina.total, 31);
     EXPECT_EQ(pagina.pagina, 2);
     EXPECT_EQ(pagina.porPagina, 25);
+}
+
+TEST(ParsearPaginaDeUsuarios, NormalizaLaFechaAlPerfilDeLaApi) {
+    // El auth-service (Go) manda nueve dígitos de fracción; Hermes solo acepta
+    // tres y rechaza el resto con `Invalid Date` (ADR #16). El desplazamiento se
+    // conserva —ya es una zona explícita— y no se reexpresa en UTC.
+    const auto pagina = parsearPaginaDeUsuarios(
+        R"({"usuarios": [{"id": 3, "created_at": "2026-09-24T18:12:03.147520233-03:00"}]})");
+
+    ASSERT_EQ(pagina.usuarios.size(), 1u);
+    EXPECT_EQ(pagina.usuarios[0].creadoEn, "2026-09-24T18:12:03.147-03:00");
 }
 
 TEST(ParsearPaginaDeUsuarios, ToleraCamposAusentesONull) {
@@ -275,6 +289,16 @@ TEST_F(CuraduriaUsuariosTest, SinAuthServiceNiCuradoresDevuelveVacioNoUnError) {
     EXPECT_FALSE(pagina.authDisponible);
     EXPECT_TRUE(pagina.usuarios.empty());
     EXPECT_EQ(pagina.total, 0);
+}
+
+TEST_F(CuraduriaUsuariosTest, UnRechazoDelAuthServiceNoDegrada) {
+    // Un filtro inválido no es una caída: degradar lo convertiría en una página
+    // silenciosamente incompleta en vez de un 400 que el panel puede mostrar.
+    auth->rechaza = true;
+    repo->porUsuario[10] = {categoria(1, "aves", Reino::Animalia)};
+
+    EXPECT_THROW(service.listar(FiltroDeUsuarios{}, "Bearer x"),
+                 AuthUsuariosRechazo);
 }
 
 TEST_F(CuraduriaUsuariosTest, ElJsonDejaVerSiElListadoEstaDegradado) {

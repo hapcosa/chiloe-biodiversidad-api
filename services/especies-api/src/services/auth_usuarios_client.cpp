@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "../../include/utils/query_params.hpp"
+#include "../../include/utils/timestamps.hpp"
 
 using json = nlohmann::json;
 
@@ -37,6 +38,28 @@ std::string strOr(const json& objeto, const char* clave,
         return porDefecto;
     }
     return objeto.at(clave).get<std::string>();
+}
+
+// El motivo que trae un 4xx del auth-service, para reenviarlo al panel en vez
+// de un genérico. Se prefiere `message`: el `error` del auth-service es el
+// nombre del estado HTTP ("Bad Request"), que no le dice nada a nadie. Si el
+// cuerpo no es el JSON de error esperado, se cae al código.
+std::string mensajeDeError(const std::string& cuerpo, long codigo) {
+    try {
+        const auto datos = json::parse(cuerpo);
+        if (datos.is_object()) {
+            for (const char* clave : {"message", "error"}) {
+                if (datos.contains(clave) && datos.at(clave).is_string() &&
+                    !datos.at(clave).get<std::string>().empty()) {
+                    return datos.at(clave).get<std::string>();
+                }
+            }
+        }
+    } catch (const std::exception&) {
+        // Cae al mensaje genérico.
+    }
+    return "el auth-service rechazó la consulta (HTTP " + std::to_string(codigo) +
+           ")";
 }
 
 // El auth-service ya normaliza los valores fuera de rango (su default y su
@@ -142,7 +165,10 @@ PaginaDeUsuarios parsearPaginaDeUsuarios(const std::string& cuerpo) {
         usuario.perfilPublico = fila.contains("perfil_publico") &&
                                 fila.at("perfil_publico").is_boolean() &&
                                 fila.at("perfil_publico").get<bool>();
-        usuario.creadoEn = strOr(fila, "created_at");
+        // El auth-service (Go) entrega la fecha con seis dígitos de fracción y
+        // desplazamiento local; el ADR #16 exige que todo lo que sale de esta
+        // API vaya en el mismo perfil ISO 8601, o Hermes la rechaza.
+        usuario.creadoEn = utils::toIso8601(strOr(fila, "created_at"));
         pagina.usuarios.push_back(std::move(usuario));
     }
 
@@ -190,6 +216,9 @@ PaginaDeUsuarios AuthUsuariosClient::listar(const FiltroDeUsuarios& filtro,
     if (resultado != CURLE_OK) {
         throw AuthUsuariosNoDisponible(std::string("el auth-service no respondió: ") +
                                        curl_easy_strerror(resultado));
+    }
+    if (codigo >= 400 && codigo < 500) {
+        throw AuthUsuariosRechazo(codigo, mensajeDeError(cuerpo, codigo));
     }
     if (codigo < 200 || codigo >= 300) {
         throw AuthUsuariosNoDisponible("el auth-service respondió HTTP " +

@@ -201,9 +201,10 @@ concentra tres cosas que hoy solo se pueden hacer por API o directo en la base:
 Resuelto: el listado lo sirve `GET /api/v1/curaduria/usuarios` en
 `especies-api`, que llama al `auth-service` para hidratar nombre y email sobre
 las asignaciones de `moderador_categorias` (ADR #27). El cruce no queda en el
-navegador. Si el `auth-service` no responde, la respuesta trae los ids que curan
-algo con `auth_disponible: false` en vez de un 500, para que el panel avise en
-vez de quedarse en blanco.
+navegador. Si el listado del `auth-service` falla, la respuesta trae los ids que
+curan algo con `auth_disponible: false` en vez de un 500, para que el panel avise
+en vez de quedarse en blanco; con el `auth-service` completamente caído no se
+llega a eso, porque el `auth_request` del gateway falla primero (ADR #27).
 Hecho: el listado del lado `auth-service` (`GET /api/v1/auth/admin/users`,
 paginado, con búsqueda y filtro por rol) y el endpoint combinado. Pendiente: la
 pantalla del panel que los consume.
