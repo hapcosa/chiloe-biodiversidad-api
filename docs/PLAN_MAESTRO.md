@@ -647,10 +647,10 @@ Mantener paridad con minikube. Aprendes Kubernetes una sola vez. Si más adelant
 
 ### Fase 0 — Preparación (esta semana)
 
-- [ ] Crear `docs/PLAN_MAESTRO.md` (este archivo) ✅
-- [ ] Crear `CLAUDE.md` en raíz ✅
+- [x] Crear `docs/PLAN_MAESTRO.md` (este archivo) ✅
+- [x] Crear `CLAUDE.md` en raíz ✅
 - [ ] Activar branch protection en `master`.
-- [ ] Crear repo separado `chiloe-biodiversidad-mobile` y añadirlo como submódulo en `mobile/`.
+- [x] Crear repo separado `chiloe-biodiversidad-mobile` y añadirlo como submódulo en `mobile/`. ✅
 
 ### Fase 1 — Migración multi-reino backend (2–3 semanas)
 
@@ -679,7 +679,7 @@ Mantener paridad con minikube. Aprendes Kubernetes una sola vez. Si más adelant
 
 ### Fase 4 — App móvil base (3–4 semanas)
 
-- [ ] Repo `chiloe-biodiversidad-mobile`: submódulo registrado en `.gitmodules`, falta clonar/publicar el repo remoto y dejar un commit de submódulo. En este entorno quedó scaffold local en `mobile/`.
+- [x] Repo `chiloe-biodiversidad-mobile` publicado en GitHub y registrado como submódulo en `mobile/`. ✅
 - [x] Scaffold React Native 0.86 bare Android (no Expo) con TypeScript estricto y base nativa Android preparada para NDK; falta generar/verificar Gradle wrapper en el repo móvil definitivo. ✅
 - [x] Pantallas: Biblioteca, Detalle, Login, Perfil. ✅
 - [x] Cliente API + manejo de JWT con almacenamiento seguro vía Keychain. ✅
@@ -751,16 +751,15 @@ Mantener paridad con minikube. Aprendes Kubernetes una sola vez. Si más adelant
       `DELETE .../{idIdentificacion}` para retirarla. El grado
       (`sin_identificar`/`en_discusion`/`investigacion`) se recalcula en la capa de servicio
       tras cada cambio, con quórum de 2/3 y voto decisivo del curador de la categoría. ✅
-- [ ] Avistamientos privados por defecto ("mis encuentros"): visibilidad
-      `privado`/`publico` y `PATCH /api/v1/avistamientos/{id}/compartir` para que el dueño
-      ofrezca un encuentro a la moderación pública ya existen en el backend (migración
-      `0008`, ADR #19). Falta la UI móvil (hoy la cola offline/sync existe pero no hay
-      pantalla).
-- [ ] Compartir un encuentro a Instagram/Facebook Stories (intents nativos, sin red social
-      propia).
-- [ ] Perfil con avatar (subida vía presigned URL, bucket `perfiles-fotos`).
-- [ ] Cámara con preview real (hoy es MVP sin preview): `Surface` de un `TextureView` nativo
-      expuesta vía JNI al `ACameraCaptureSession` existente.
+- [x] Avistamientos privados por defecto ("mis encuentros"): visibilidad
+      `privado`/`publico` y `PATCH /api/v1/avistamientos/{id}/compartir` en el backend
+      (migración `0008`, ADR #19) y la UI en el móvil (`mobile` PR #8). ✅
+- [x] Compartir un encuentro a Instagram/Facebook Stories (intents nativos, sin red social
+      propia; `mobile` PR #13). ✅
+- [x] Perfil con avatar (subida vía presigned URL, bucket `perfiles-fotos`; `mobile`
+      PR #11). ✅
+- [x] Cámara con preview real: `Surface` de un `TextureView` nativo expuesta vía JNI al
+      `ACameraCaptureSession` existente (`mobile` PR #15). ✅
 
 ---
 
