@@ -1,7 +1,7 @@
 # Plan Maestro — Biodiversidad de Chiloé (Backend microservicios + APK Android)
 
 > Documento vivo. Cualquier cambio estructural se discute aquí antes de tocar código.
-> Última actualización: 2026-07-29.
+> Última actualización: 2026-10-28.
 
 ---
 
@@ -626,7 +626,17 @@ make minikube-deploy
 
 Manifiestos en `infrastructure/kubernetes/base/` + overlay `dev/`.
 
-### Producción (VPS con k3s)
+### Producción actual (Docker Compose + Cloudflare Tunnel)
+
+Es lo que corre hoy (ADR #13). Comando de despliegue y piezas que no viven en el repo
+(env de producción, credenciales del túnel): ver `CLAUDE.md` y
+[docs/deployment/PRODUCCION_DOCKER_CLOUDFLARE.md](deployment/PRODUCCION_DOCKER_CLOUDFLARE.md).
+Las imágenes se construyen en el propio host desde su checkout, así que un merge a `master`
+no llega a producción hasta que alguien reconstruye allí.
+
+### Producción objetivo (VPS con k3s)
+
+Sigue vigente para un VPS dedicado (decisión #6); no es lo que corre hoy.
 
 **Stack**:
 - VPS Linux (Hetzner/DigitalOcean/Contabo, mínimo 4 vCPU / 8 GB RAM).
@@ -644,6 +654,9 @@ Mantener paridad con minikube. Aprendes Kubernetes una sola vez. Si más adelant
 ---
 
 ## 9. Hoja de ruta por fases
+
+> La **Fase 9** (turismo y comunidad) tiene su propio documento:
+> [PLAN_FASE_9_TURISMO_Y_COMUNIDAD.md](PLAN_FASE_9_TURISMO_Y_COMUNIDAD.md).
 
 ### Fase 0 — Preparación (esta semana)
 
@@ -702,10 +715,10 @@ Mantener paridad con minikube. Aprendes Kubernetes una sola vez. Si más adelant
 ### Fase 7 — VPS y producción (1 semana)
 
 - [x] Preparación local: overlay Kustomize k3s producción con Traefik/cert-manager y guía `docs/deployment/K3S_PRODUCCION.md`. ✅
-- [ ] Provisionar VPS, instalar k3s.
-- [ ] Configurar Traefik + cert-manager con dominio real.
-- [ ] Migrar secrets, primer deploy.
-- [ ] Configurar backups.
+- [x] Producción real en **Docker Compose + túnel Cloudflare** (ADR #13), no en k3s: `infrastructure/docker/docker-compose.prod.yml`, dominio `piedrasdelrayadito.cl`. Primer deploy hecho; el stack se migró de host el 2026-08-14 (ver [PRODUCCION_DOCKER_CLOUDFLARE.md](deployment/PRODUCCION_DOCKER_CLOUDFLARE.md)). ✅
+- [ ] Provisionar VPS dedicado, instalar k3s, Traefik + cert-manager. Solo si el host compartido se queda corto; los manifiestos de `infrastructure/kubernetes/` siguen como camino de migración.
+- [ ] Configurar backups automáticos (hoy solo `pg_dump` manual; falta cron, copia del volumen de MinIO y destino externo).
+- [ ] Automatizar el redeploy: hoy es `git pull` + `up -d --build` a mano en el host, y las imágenes pueden quedar por detrás de `master` sin que nada lo avise.
 
 ### Fase 8 — Pulido y carga de contenido
 
