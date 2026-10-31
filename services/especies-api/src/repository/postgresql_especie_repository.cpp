@@ -16,6 +16,7 @@ constexpr const char* kSelectCols =
     "fuentes::text AS fuentes_text, geo_lat, geo_lng, "
     "atributos_especificos::text AS atributos_text, "
     "foto_portada_key, fotos_keys::text AS fotos_keys_text, "
+    "fotos_creditos::text AS fotos_creditos_text, "
     "categoria_id, estado, publicado_por, fecha_publicacion, "
     "creado_por, revisado_por, "
     "fecha_revision, created_at, updated_at";
@@ -71,6 +72,8 @@ Especie PostgreSQLEspecieRepository::mapRowToEspecie(const pqxx::row& row) {
         parseJsonbText(row["atributos_text"], nlohmann::json::object()));
     e.setFotoPortadaKey(optStr(row["foto_portada_key"]));
     e.setFotosKeys(parseJsonbText(row["fotos_keys_text"], nlohmann::json::array()));
+    e.setFotosCreditos(
+        parseJsonbText(row["fotos_creditos_text"], nlohmann::json::object()));
     e.setCategoriaId(optInt(row["categoria_id"]));
     e.setEstado(especieEstadoFromString(row["estado"].c_str()));
     e.setPublicadoPor(optInt(row["publicado_por"]));
@@ -206,6 +209,7 @@ EspecieSearchResult PostgreSQLEspecieRepository::find(
             "e.geo_lat, e.geo_lng, "
             "e.atributos_especificos::text AS atributos_text, "
             "e.foto_portada_key, e.fotos_keys::text AS fotos_keys_text, "
+            "e.fotos_creditos::text AS fotos_creditos_text, "
             "e.categoria_id, e.estado, e.publicado_por, e.fecha_publicacion, "
             "e.creado_por, e.revisado_por, e.fecha_revision, "
             "e.created_at, e.updated_at";

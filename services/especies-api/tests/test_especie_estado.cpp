@@ -112,4 +112,14 @@ TEST(EspecieEstadoTest, ToJsonExponeEstadoYFirma) {
     EXPECT_EQ(serializada["fecha_publicacion"], "2026-08-03T12:00:00Z");
 }
 
+TEST(EspecieFotosCreditosTest, VacioPorDefectoYNoSeLeeDelCliente) {
+    // Un cliente no puede afirmar la licencia de una foto: solo la carga el servidor.
+    auto j = fichaMinima();
+    j["fotos_creditos"] = json{{"k", json{{"licencia", "cc0"}}}};
+    const auto e = Especie::fromJson(j);
+    EXPECT_TRUE(e.getFotosCreditos().is_object());
+    EXPECT_TRUE(e.getFotosCreditos().empty());
+    EXPECT_TRUE(e.toJson().at("fotos_creditos").is_object());
+}
+
 } // namespace

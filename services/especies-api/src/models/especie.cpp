@@ -27,6 +27,7 @@ Especie::Especie()
       fuentes(nlohmann::json::array()),
       atributos_especificos(nlohmann::json::object()),
       fotos_keys(nlohmann::json::array()),
+      fotos_creditos(nlohmann::json::object()),
       // Fail closed: una ficha recién construida no es pública hasta que
       // alguien con curaduría la publique explícitamente.
       estado(EspecieEstado::Borrador) {}
@@ -88,6 +89,7 @@ nlohmann::json Especie::toJson() const {
     j["atributos_especificos"] = atributos_especificos;
     writeOpt(j, "foto_portada_key", foto_portada_key);
     j["fotos_keys"] = fotos_keys;
+    j["fotos_creditos"] = fotos_creditos;
     writeOpt(j, "categoria_id", categoria_id);
     j["estado"] = especieEstadoToString(estado);
     writeOpt(j, "publicado_por", publicado_por);

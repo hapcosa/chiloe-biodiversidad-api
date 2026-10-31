@@ -19,6 +19,7 @@ services/especies-api/
 │   ├── 0010_avistamientos_precision_declarada.sql # cuánto se fía el autor de la ubicación
 │   ├── 0011_avistamientos_indice_espacial.sql # índice del bbox del mapa
 │   ├── 0012_areas_protegidas.sql             # parques y áreas protegidas + seed
+│   ├── 0015_especies_fotos_creditos.sql      # autor y licencia por foto
 │   └── README.md              # este archivo
 └── scripts/
     └── migrate.sh             # runner
