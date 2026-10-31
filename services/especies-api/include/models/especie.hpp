@@ -47,6 +47,9 @@ private:
     // construyen en la capa de presentación cuando MinIO esté operativo.
     std::optional<std::string> foto_portada_key;
     nlohmann::json fotos_keys;  // array de strings JSONB, default []
+    // Autor y licencia por foto, indexado por key (migración 0015). Solo
+    // lectura para los clientes: fromJson no lo toca.
+    nlohmann::json fotos_creditos;  // objeto JSONB, default {}
 
     // Categoría de moderación a la que pertenece la ficha. Determina quién
     // puede editarla (ver migrations/0004_categorias_moderacion.sql). Opcional
@@ -93,6 +96,7 @@ public:
     const nlohmann::json&              getAtributosEspecificos()const { return atributos_especificos; }
     const std::optional<std::string>&  getFotoPortadaKey()      const { return foto_portada_key; }
     const nlohmann::json&              getFotosKeys()           const { return fotos_keys; }
+    const nlohmann::json&              getFotosCreditos()       const { return fotos_creditos; }
     const std::optional<int>&          getCategoriaId()         const { return categoria_id; }
     EspecieEstado                      getEstado()              const { return estado; }
     bool                               esBorrador()             const { return estado == EspecieEstado::Borrador; }
@@ -124,6 +128,7 @@ public:
     void setAtributosEspecificos(const nlohmann::json& v)       { atributos_especificos = v; }
     void setFotoPortadaKey(std::optional<std::string> v)        { foto_portada_key = std::move(v); }
     void setFotosKeys(const nlohmann::json& v)                  { fotos_keys = v; }
+    void setFotosCreditos(const nlohmann::json& v)              { fotos_creditos = v; }
     void setCategoriaId(std::optional<int> v)                   { categoria_id = v; }
     void setEstado(EspecieEstado v)                             { estado = v; }
     void setPublicadoPor(std::optional<int> v)                  { publicado_por = v; }
