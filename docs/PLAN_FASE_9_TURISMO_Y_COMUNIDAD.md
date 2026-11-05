@@ -206,8 +206,11 @@ curan algo con `auth_disponible: false` en vez de un 500, para que el panel avis
 en vez de quedarse en blanco; con el `auth-service` completamente caído no se
 llega a eso, porque el `auth_request` del gateway falla primero (ADR #27).
 Hecho: el listado del lado `auth-service` (`GET /api/v1/auth/admin/users`,
-paginado, con búsqueda y filtro por rol) y el endpoint combinado. Pendiente: la
-pantalla del panel que los consume.
+paginado, con búsqueda y filtro por rol), el endpoint combinado (#105) y la
+pantalla del panel que los consume (#106). Queda fuera, a propósito, la
+verificación de la profesión: el `PUT /users/:id` del `auth-service` es un stub
+501 y no hay dónde persistirla; necesita su propio PR y ADR. Mientras tanto el
+panel la muestra marcada como "sin verificar".
 
 **PR 13 — `feat(curaduria): postular a curar una categoría`**
 *(mobile + panel)*
