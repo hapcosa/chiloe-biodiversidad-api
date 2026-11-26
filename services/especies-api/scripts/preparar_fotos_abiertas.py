@@ -16,6 +16,7 @@ Uso:  python3 -I preparar_fotos_abiertas.py reporte.json --salida DIR_NUEVO
 import argparse
 import datetime
 import hashlib
+import html
 import json
 import os
 import re
@@ -37,10 +38,10 @@ def slug(nombre):
 def autor_de(atribucion):
     # "(c) Nombre, some rights reserved (CC BY), uploaded by Nombre"
     m = re.match(r"\(c\)\s*(.+?),\s*(?:some|no) rights reserved", atribucion or "")
-    if m:
-        return m.group(1).strip()
-    m = re.search(r"uploaded by (.+)$", atribucion or "")
-    return m.group(1).strip() if m else None
+    if not m:
+        m = re.search(r"uploaded by (.+)$", atribucion or "")
+    # iNaturalist puede mandar el nombre con entidades HTML ("Ana &amp; Luis").
+    return html.unescape(m.group(1).strip()) if m else None
 
 
 def sql_str(valor):
