@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { subirArchivo } from '../api/api';
+import type { CreditoFoto } from '../api/tipos';
 import { useSesion } from '../auth/sesion';
 import { Aviso } from './Aviso';
+import { CreditoDeFoto } from './CreditoDeFoto';
 
 const BUCKET = 'especies-fotos';
 
@@ -15,10 +17,11 @@ export function urlPublica(key: string): string {
 interface Props {
   fotosKeys: string[];
   portada: string | null;
+  creditos?: Record<string, CreditoFoto>;
   onChange: (fotos: { fotos_keys: string[]; foto_portada_key: string | null }) => void;
 }
 
-export function SubidaFotos({ fotosKeys, portada, onChange }: Props) {
+export function SubidaFotos({ fotosKeys, portada, creditos, onChange }: Props) {
   const { api } = useSesion();
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +83,7 @@ export function SubidaFotos({ fotosKeys, portada, onChange }: Props) {
         {fotosKeys.map((key) => (
           <li key={key} className={key === portada ? 'es-portada' : undefined}>
             <img src={urlPublica(key)} alt="" loading="lazy" />
+            {creditos?.[key] && <CreditoDeFoto credito={creditos[key]} />}
             <div>
               <button
                 type="button"

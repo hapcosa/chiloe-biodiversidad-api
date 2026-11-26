@@ -31,6 +31,14 @@ export interface Categoria {
   descripcion: string | null;
 }
 
+// Atribución de una foto de fuente abierta (ADR #28). Solo lectura.
+export interface CreditoFoto {
+  autor?: string | null;
+  licencia: string;
+  url_origen?: string;
+  fuente?: string;
+}
+
 export interface Especie {
   id: number;
   reino: Reino;
@@ -50,6 +58,8 @@ export interface Especie {
   atributos_especificos: Record<string, unknown>;
   foto_portada_key: string | null;
   fotos_keys: string[];
+  /** Indexado por la key de la foto. Sin entrada: foto propia o de origen no abierto. */
+  fotos_creditos?: Record<string, CreditoFoto>;
   categoria_id: number | null;
   estado: EspecieEstado;
   publicado_por: number | null;

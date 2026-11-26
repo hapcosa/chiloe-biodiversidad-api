@@ -452,6 +452,7 @@ export function FormularioEspecie() {
           <SubidaFotos
             fotosKeys={borrador.fotos_keys}
             portada={borrador.foto_portada_key}
+            creditos={especie?.fotos_creditos}
             onChange={({ fotos_keys, foto_portada_key }) =>
               setBorrador((actual) => ({
                 ...actual,
