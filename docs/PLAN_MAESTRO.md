@@ -1,7 +1,7 @@
 # Plan Maestro — Biodiversidad de Chiloé (Backend microservicios + APK Android)
 
 > Documento vivo. Cualquier cambio estructural se discute aquí antes de tocar código.
-> Última actualización: 2026-10-28.
+> Última actualización: 2026-11-26.
 
 ---
 
@@ -455,6 +455,19 @@ Pensé en lo que un usuario de divulgación querría leer y lo que es taxonómic
   el feed comunitario muestre encuentros ajenos sin abrir el bucket.
 - `perfiles-fotos` — avatares, lectura anónima. El backend guarda la URL, no la key.
 
+### Fotos de fuentes abiertas (ADR #28)
+
+Carga manual desde iNaturalist, en cuatro pasos. Los scripts viven en
+`services/especies-api/scripts/` y no tocan producción.
+
+1. `buscar_fotos_abiertas.py`: una candidata por especie, solo si el nombre del taxón
+   coincide exacto. Los sinónimos quedan anotados para curaduría.
+2. `preparar_fotos_abiertas.py`: descarga, quita el EXIF y genera `carga.sql` y los créditos.
+3. Revisión visual de cada foto antes de cargar: el grado de investigación no descarta
+   ejemplares muertos, huellas ni fotos donde la especie no se reconoce.
+4. Subir a `especies-fotos`, respaldar la base y aplicar `carga.sql`, que no pisa una
+   portada existente.
+
 ### Procesamiento
 
 - **Stripping de EXIF**: el módulo nativo de cámara escribe metadatos mínimos (sin GPS, sin device serial) salvo lo que el usuario explícitamente quiere compartir.
@@ -723,6 +736,21 @@ Mantener paridad con minikube. Aprendes Kubernetes una sola vez. Si más adelant
 ### Fase 8 — Pulido y carga de contenido
 
 - [ ] Importación inicial de ~50 especies por reino (CSV → script).
+- [x] Portadas con licencia abierta (ADR #28): 114 fotos de iNaturalist en producción (95
+      el 2026-11-05 y 19 el 2026-11-20). Tienen portada 129 de 148 especies; las otras 15
+      portadas son anteriores y no registran créditos.
+- [ ] Atribución visible junto a la foto en el panel y en la app. Es condición de CC-BY:
+      no se cumple hasta desplegar el panel y publicar un APK que la muestre.
+- [ ] 19 especies sin portada:
+      - sin una candidata utilizable: *Sylviorthorhynchus desmursii*, *Oligoryzomys
+        longicaudatus*, *Vanellus chilensis*, *Genypterus blacodes*;
+      - sin foto con licencia abierta: *Ramaria flava*, *Vibrio parahaemolyticus*,
+        *Rhyncholestes raphanurus*, *Sprattus fuegensis*, *Aegla abtao*;
+      - iNaturalist devuelve otro nombre, a resolver por curaduría (no asumir que es un
+        sinónimo): *Phalacrocorax brasilianus*, *Milvago chimango*, *Lagenorhynchus
+        australis*, *Tachymenis chilensis*, *Tepualia stipularis*, *Desfontainia spinosa*,
+        *Liolaemus cyanogaster*, *Accipiter chilensis*;
+      - taxón no encontrado: *Pseudocyphellaria berberina*, *Piscirickettsia salmonis*.
 - [ ] Revisión por un curador.
 - [ ] Beta cerrada de la APK.
 
